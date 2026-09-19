@@ -14,14 +14,14 @@
 // Delegates
 // =========================
 
-// Appelé lorsqu'une unité perd ou gagne de la vie
+// Called when a unit loses or gains health
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
     FOnHealthChanged,
     float,
     NewHealthPercent
 );
 
-// Appelé lorsqu'une unité meurt
+// Called when a unit dies
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
     FOnUnitDied,
     class AUnits*,
@@ -31,9 +31,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
 class AGridManager;
 
 // =========================
-// Classe de base de toutes
-// les unités du jeu.
-// (joueurs et ennemis)
+// Base class for all
+// game units.
+// (players and enemies)
 // =========================
 
 UCLASS()
@@ -48,14 +48,14 @@ public:
     virtual void Tick(float DeltaTime) override;
 
     // =========================
-    // Références
+    // References
     // =========================
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     AGridManager* GridManagerRef;
 
     // =========================
-    // Déplacement / Combat
+    // Movement / Combat
     // =========================
 
     UPROPERTY(BlueprintReadOnly, Category = "Stats")
@@ -95,7 +95,7 @@ public:
     float AcceptanceDistance = 5.f;
 
     // =========================
-    // Statistiques
+    // Stats
     // =========================
 
     UPROPERTY(BlueprintReadOnly, Category = "Stats")
@@ -131,12 +131,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float AttackTime = 2.f;
 
-    // Dégâts appliqués par les cases en feu
+    // Damage applied by fire tiles
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float DamageFire = 10.f;
 
     // =========================
-    // Gestion des tours
+    // Turn management
     // =========================
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Turn")
@@ -154,7 +154,7 @@ public:
     bool bHasUsedSkill = false;
 
     // =========================
-    // Compétences
+    // Skills
     // =========================
 
     UPROPERTY(BlueprintReadOnly)
@@ -188,7 +188,7 @@ public:
     void LevelUp();
 
     // =========================
-    // Interface utilisateur
+    // User interface
     // =========================
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
@@ -221,7 +221,7 @@ public:
     FOnUnitDied OnUnitDied;
 
     // =========================
-    // Divers
+    // Miscellaneous
     // =========================
 
     UPROPERTY(BlueprintReadOnly)
@@ -233,7 +233,7 @@ public:
 protected:
 
     // =========================
-    // Initialisation
+    // Initialization
     // =========================
 
     virtual void BeginPlay() override;

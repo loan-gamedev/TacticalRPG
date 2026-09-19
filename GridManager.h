@@ -13,7 +13,7 @@
 class ATurnManager;
 
 // =========================
-// Etats visuels d'une case
+// Visual states of a tile
 // =========================
 
 UENUM(BlueprintType)
@@ -33,7 +33,7 @@ enum class ETileState : uint8
 ENUM_RANGE_BY_COUNT(ETileState, ETileState::MAX);
 
 // =========================
-// Type réel d'une case
+// Actual tile type
 // =========================
 
 UENUM(BlueprintType)
@@ -48,7 +48,7 @@ enum class ETileType : uint8
 };
 
 // =========================
-// Données stockées par case
+// Data stored for each tile
 // =========================
 
 USTRUCT(BlueprintType)
@@ -63,8 +63,8 @@ struct FTileData
 };
 
 // =========================
-// Données utilisées pour
-// gérer les cases en feu
+// Data used to
+// manage fire tiles
 // =========================
 
 USTRUCT()
@@ -83,8 +83,8 @@ struct FFireTile
 };
 
 // =========================
-// Gestion de la grille,
-// des cases et des actions
+// Grid management,
+// tiles, and actions
 // =========================
 
 UCLASS()
@@ -95,7 +95,7 @@ class TRPG_GAME_API AGridManager : public AActor
 public:
 
 	// =========================
-	// Constructeur / Tick
+	// Constructor / Tick
 	// =========================
 
 	AGridManager();
@@ -103,7 +103,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// =========================
-	// Références
+	// References
 	// =========================
 
 	UPROPERTY(BlueprintReadOnly)
@@ -116,7 +116,7 @@ public:
 	APlayerController* PlayerController;
 
 	// =========================
-	// Système de feu
+	// Fire system
 	// =========================
 
 	UPROPERTY()
@@ -129,7 +129,7 @@ public:
 	void AddFireTile(int TileIndex);
 
 	// =========================
-	// Gestion des cases
+	// Tile management
 	// =========================
 
 	bool isIndexValid(int index);
@@ -156,11 +156,11 @@ public:
 		int InstanceIndex
 	);
 
-	// Retourne le type d'une case
+	// Returns the type of a tile
 	ETileType FindTileType(int index);
 
 	// =========================
-	// Paramètres de la grille
+	// Grid settings
 	// =========================
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tab")
@@ -173,7 +173,7 @@ public:
 	float TileSize;
 
 	// =========================
-	// Conversion monde <-> grille
+	// World <-> grid conversion
 	// =========================
 
 	UFUNCTION(BlueprintCallable)
@@ -186,7 +186,7 @@ public:
 	);
 
 	// =========================
-	// Données des cases
+	// Tile data
 	// =========================
 
 	UPROPERTY()
@@ -195,7 +195,7 @@ public:
 protected:
 
 	// =========================
-	// Initialisation
+	// Initialization
 	// =========================
 
 	virtual void BeginPlay() override;
@@ -239,7 +239,7 @@ protected:
 	);
 
 	// =========================
-	// Affichage des cases
+	// Tile display
 	// =========================
 
 	void UnHoverTile(int index);
@@ -261,7 +261,7 @@ protected:
 	);
 
 	// =========================
-	// Mesh de la grille
+	// Grid mesh
 	// =========================
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
@@ -274,7 +274,7 @@ protected:
 	class UMaterialInterface* Material;
 
 	// =========================
-	// Hit Result souris
+	// Mouse Hit Result
 	// =========================
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Tab")

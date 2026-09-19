@@ -9,7 +9,7 @@
 #include "UnitDataAsset.h"
 
 // ============================================================================
-// Constructeur : Configuration initiale de l'unité
+// Constructor: Initial unit setup
 // ============================================================================
 AUnits::AUnits()
 {
@@ -17,18 +17,18 @@ AUnits::AUnits()
 }
 
 // ============================================================================
-// Initialisation du jeu : Liaison avec les managers globaux
+// Game initialization: Linking global managers
 // ============================================================================
 void AUnits::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Récupération de la référence du Grid Manager présent sur la map
+	// Retrieving the Grid Manager reference present in the map
 	GridManagerRef = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass()));
 }
 
 // ============================================================================
-// Phase de Construction : Chargement des statistiques via Data Table
+// Construction phase: Loading stats from the Data Table
 // ============================================================================
 void AUnits::OnConstruction(const FTransform& Transform)
 {
@@ -40,7 +40,7 @@ void AUnits::OnConstruction(const FTransform& Transform)
 		return;
 	}
 
-	// Recherche de la ligne correspondant au type d'unité (ex: Guerrier, Mage...)
+	// Finding the row matching the unit type (e.g. Warrior, Mage...)
 	FSUnit* Row = UnitDataTable->FindRow<FSUnit>(UnitRowName, TEXT(""));
 
 	if (!Row)
@@ -51,7 +51,7 @@ void AUnits::OnConstruction(const FTransform& Transform)
 
 	if (!GetMesh()) return;
 
-	// Attribution des stats de la Data Table aux variables de l'instance
+	// Assigning Data Table stats to instance variables
 	CurrentHealth = Row->Health;
 	MaxHealth = Row->MaxHealth;
 	Damage = Row->Damage;
@@ -73,7 +73,7 @@ void AUnits::Tick(float DeltaTime)
 }
 
 // ============================================================================
-// Gestion des déplacements et de la navigation
+// Movement and navigation management
 // ============================================================================
 void AUnits::SetPath(const TArray<int>& NewPath)
 {
@@ -81,7 +81,7 @@ void AUnits::SetPath(const TArray<int>& NewPath)
 	CurrentPathIndex = 0;
 	bIsMoving = true;
 
-	// Déclenchement de l'animation de marche si ce n'est pas un dash rapide
+	// Triggering the walk animation unless this is a fast dash
 	if (!bIsDash)
 	{
 		AnimState = EUnitAnimState::WALK;
@@ -90,21 +90,21 @@ void AUnits::SetPath(const TArray<int>& NewPath)
 
 void AUnits::MoveAlongPath(float DeltaTime)
 {
-	// Logique de déplacement interpolé le long des cases (implémentée en Blueprint ou à compléter)
+	// Interpolated movement logic along tiles (implemented in Blueprint or to be completed)
 }
 
 // ============================================================================
-// Système de combat : Encaissement des dégâts et cycle de vie
+// Combat system: Damage handling and lifecycle
 // ============================================================================
 void AUnits::ReceiveDamage(float Amount)
 {
-	// Affichage du texte flottant et réaction visuelle
+	// Displaying floating damage text and visual feedback
 	ShowDamageText(Amount);
 	AnimState = EUnitAnimState::HIT;
 
 	CurrentHealth -= Amount;
 
-	// Notification pour mettre à jour la barre de vie (UI)
+	// Notification to update the health bar (UI)
 	OnHealthChanged.Broadcast(CurrentHealth / MaxHealth);
 
 	if (CurrentHealth <= 0.f)
@@ -113,7 +113,7 @@ void AUnits::ReceiveDamage(float Amount)
 		return;
 	}
 
-	// Configuration du retour à l'état Idle après l'animation d'impact
+	// Setting up the return to Idle after the hit animation
 	FTimerHandle HitTimer;
 	GetWorld()->GetTimerManager().SetTimer(
 		HitTimer,
@@ -133,19 +133,19 @@ void AUnits::Die()
 {
 	OnUnitDied.Broadcast(this);
 
-	// Libération de la case sur la grille pour la rendre à nouveau traversable
+	// Freeing the grid tile to make it traversable again
 	int TileIndex = GridManagerRef->GetIndexFromWorldPosition(GetActorLocation());
 	GridManagerRef->AddTypeToTile(ETileType::Normal, TileIndex);
 
 	AnimState = EUnitAnimState::DEATH;
 
-	// Désactivation physique et programmation de la destruction de l'Actor
+	// Disabling collision and scheduling Actor destruction
 	SetActorEnableCollision(false);
 	SetLifeSpan(2.f);
 }
 
 // ============================================================================
-// Progression : Gestion de l'expérience (XP) et Gain de niveau
+// Progression: Experience (XP) and level-up management
 // ============================================================================
 void AUnits::GainXP(int Amount)
 {
@@ -164,15 +164,15 @@ void AUnits::LevelUp()
 	CurrentXP -= XPToNextLevel;
 	Level++;
 
-	// Palier dynamique de niveau et augmentation des statistiques globales
+	// Dynamic level threshold and global stat increases
 	XPToNextLevel = Level * 100;
 	MaxHealth += 20.f;
-	CurrentHealth = MaxHealth; // Soigne l'unité au passage de niveau
+	CurrentHealth = MaxHealth; // Heals the unit on level up
 	Damage += 5.f;
 
 	UE_LOG(LogTemp, Warning, TEXT("%s LEVEL UP : %d"), *GetName(), Level);
 
-	// Actualisation des informations affichées sur l'interface de combat
+	// Updating information displayed on the combat UI
 	ATurnManager* TurnManager = Cast<ATurnManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ATurnManager::StaticClass()));
 
 	if (TurnManager && TurnManager->CurrentUnit == this)
@@ -182,7 +182,7 @@ void AUnits::LevelUp()
 }
 
 // ============================================================================
-// Interface Utilisateur : Affichage des popups de dégâts (Screen Space)
+// User Interface: Displaying damage popups (Screen Space)
 // ============================================================================
 void AUnits::ShowDamageText(float DamageAmount)
 {
@@ -193,7 +193,7 @@ void AUnits::ShowDamageText(float DamageAmount)
 
 	Widget->AddToViewport();
 
-	// Envoi de la valeur numérique à la fonction de mise à jour du Widget Blueprint
+	// Sending the numeric value to the Blueprint Widget update function
 	UFunction* Function = Widget->FindFunction(FName("SetDamage"));
 	if (Function)
 	{
@@ -212,7 +212,7 @@ void AUnits::ShowDamageText(float DamageAmount)
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (!PC) return;
 
-	// Projection de la position 3D de la tête de l'unité vers des coordonnées écran 2D
+	// Projecting the unit head position from 3D world space to 2D screen coordinates
 	FVector2D ScreenPosition;
 	UGameplayStatics::ProjectWorldToScreen(
 		PC,
@@ -224,13 +224,13 @@ void AUnits::ShowDamageText(float DamageAmount)
 }
 
 // ============================================================================
-// Portée d'action : Calcul des distances selon le schéma d'attaque
+// Action range: Distance calculation based on the attack pattern
 // ============================================================================
 bool AUnits::IsTargetInAttackRange(AUnits* Target)
 {
 	if (!Target) return false;
 
-	// Extraction des coordonnées matricielles (Colonnes / Lignes)
+	// Extracting grid coordinates (Columns / Rows)
 	int MyIndex = GridManagerRef->GetIndexFromWorldPosition(GetActorLocation());
 	int TargetIndex = GridManagerRef->GetIndexFromWorldPosition(Target->GetActorLocation());
 
@@ -240,11 +240,11 @@ bool AUnits::IsTargetInAttackRange(AUnits* Target)
 	int TargetCol = TargetIndex / GridManagerRef->Y;
 	int TargetRow = TargetIndex % GridManagerRef->Y;
 
-	// Calcul des distances absolues sur les axes X et Y (Distance de Manhattan)
+	// Calculating absolute distances on the X and Y axes (Manhattan distance)
 	int DX = FMath::Abs(MyCol - TargetCol);
 	int DY = FMath::Abs(MyRow - TargetRow);
 
-	// Filtrage géométrique selon la forme géométrique du pattern d'attaque
+	// Geometric filtering based on the attack pattern shape
 	switch (AttackPattern)
 	{
 	case EAttackPattern::Cross:

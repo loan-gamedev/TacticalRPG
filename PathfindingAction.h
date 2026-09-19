@@ -9,8 +9,8 @@
 #include "PathfindingAction.generated.h"
 
 // =========================
-// Données utilisées par
-// l'algorithme A*
+// Data used by
+// the A* algorithm
 // =========================
 
 USTRUCT(BlueprintType)
@@ -41,9 +41,9 @@ struct FNodeData
 class AUnits;
 
 // =========================
-// Action de déplacement.
-// Gère le pathfinding A*
-// et l'affichage du chemin.
+// Movement action.
+// Handles A* pathfinding
+// and path visualization.
 // =========================
 
 UCLASS()
@@ -53,14 +53,14 @@ class TRPG_GAME_API UPathfindingAction : public UPlayerAction
 
 public:
 
-    // Chemin final calculé
+    // Final calculated path
     UPROPERTY()
     TArray<int> FinalPath;
 
-    // Cases accessibles par l'unité
+    // Tiles reachable by the unit
     TArray<int> ReachableTiles;
 
-    // Dernière destination sélectionnée
+    // Last selected destination
     int LastTargetIndex = -1;
 
     // =========================
@@ -74,7 +74,7 @@ public:
     virtual void RightClick(int Index) override;
 
     // =========================
-    // Données A*
+    // A* data
     // =========================
 
     TPair<int, FNodeData> startIndex;
@@ -83,17 +83,17 @@ public:
 
     TPair<int, FNodeData> target;
 
-    // Cases à explorer
+    // Tiles to explore
     TMap<int, FNodeData> OPEN;
 
-    // Cases déjà explorées
+    // Already explored tiles
     TMap<int, FNodeData> CLOSED;
 
-    // Voisins du noeud courant
+    // Neighbors of the current node
     TMap<int, FNodeData> NEIGHBOURS;
 
     // =========================
-    // Affichage
+    // Display
     // =========================
 
     void ShowReachableTiles();
@@ -103,16 +103,16 @@ public:
     bool flag = false;
 
     // =========================
-    // Fonctions A*
+    // A* functions
     // =========================
 
-    // Récupère les voisins d'une case
+    // Gets the neighbors of a tile
     TMap<int, FNodeData> GetAllNeighbours(
         int NodeToCheck,
         int parentGCost
     );
 
-    // Calcule les coûts d'un noeud
+    // Calculates the costs of a node
     FNodeData GetPositionOfTheTile(
         int Target,
         int nodeIndex,
@@ -120,6 +120,6 @@ public:
         bool isDiagonal
     );
 
-    // Initialise les données du pathfinding
+    // Initializes pathfinding data
     void InitGrid();
 };

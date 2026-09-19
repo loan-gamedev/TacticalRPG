@@ -8,17 +8,17 @@
 #define ECC_Player ECC_GameTraceChannel2
 
 // ============================================================================
-// Logique d'exécution continue (Survol / Hover de la souris)
+// Continuous execution logic (Mouse hover)
 // ============================================================================
 void UPathfindingAction::ExecuteAction(int Index)
 {
-    // Retire le hover de l'ancienne case survolée
+    // Removes hover from the previously hovered tile
     if (GridRef->isIndexValid(GridRef->PreviousIndex))
     {
         GridRef->RemoveStateToTile(ETileState::Hovered, GridRef->PreviousIndex);
     }
 
-    // Applique le hover sur la nouvelle case sous le curseur
+    // Applies hover to the new tile under the cursor
     if (GridRef->isIndexValid(Index))
     {
         GridRef->AddStateToTile(ETileState::Hovered, Index);
@@ -31,14 +31,14 @@ void UPathfindingAction::ExecuteAction(int Index)
 }
 
 // ============================================================================
-// Gestion du Clic Gauche : Sélection de personnage et calcul de chemin (A*)
+// Left Click Handling: Character selection and path calculation (A*)
 // ============================================================================
 void UPathfindingAction::LeftClick(int Index)
 {
     bool bFoundPlayer = false;
 
     // ------------------------------------------------------------------------
-    // Phase 1 : Recherche d'un personnage sur la case cliquée
+    // Phase 1: Finding a character on the clicked tile
     // ------------------------------------------------------------------------
     for (TActorIterator<APlayer_Character> It(GetWorld()); It; ++It)
     {
@@ -48,11 +48,11 @@ void UPathfindingAction::LeftClick(int Index)
         int PlayerTile = GridRef->GetIndexFromWorldPosition(FoundPlayer->GetActorLocation());
         if (PlayerTile != Index) continue;
 
-        // Personnage trouvé !
+        // Character found!
         bFoundPlayer = true;
         ClearReachableTiles();
 
-        // Gestion du changement de sélection de personnage
+        // Handling character selection changes
         if (PlayerCharacter && PlayerCharacter != FoundPlayer)
         {
             PlayerCharacter->UnselectPlayer();
@@ -60,7 +60,7 @@ void UPathfindingAction::LeftClick(int Index)
 
         PlayerCharacter = FoundPlayer;
         PlayerCharacter->SelectPlayer();
-        ShowReachableTiles(); // Affiche sa zone de mouvement maximale
+        ShowReachableTiles(); // Displays the maximum movement range
 
         break;
     }
@@ -68,7 +68,7 @@ void UPathfindingAction::LeftClick(int Index)
     if (bFoundPlayer) return;
 
     // ------------------------------------------------------------------------
-    // Phase 2 : Gestion des conditions de déplacement (Si aucun joueur cliqué)
+    // Phase 2: Handling movement conditions (if no player was clicked)
     // ------------------------------------------------------------------------
     if (!PlayerCharacter || !PlayerCharacter->bIsMyTurn || PlayerCharacter->bHasMoved || !PlayerCharacter->bIsSelected)
     {
@@ -77,7 +77,7 @@ void UPathfindingAction::LeftClick(int Index)
 
     if (!GridRef || !GridRef->isIndexValid(Index)) return;
 
-    // Vérification de la validité de la destination (Doit être dans la zone bleue/Reachable)
+    // Checking destination validity (must be in the blue/Reachable area)
     if (!GridRef->TileMap[Index].StateArray.Contains(ETileState::Reachable))
     {
         return;
@@ -89,7 +89,7 @@ void UPathfindingAction::LeftClick(int Index)
     LastTargetIndex = Index;
 
     // ------------------------------------------------------------------------
-    // Phase 3 : Algorithme de Pathfinding A*
+    // Phase 3: A* pathfinding algorithm
     // ------------------------------------------------------------------------
     InitGrid();
 
@@ -102,7 +102,7 @@ void UPathfindingAction::LeftClick(int Index)
     {
         current = *OPEN.begin();
 
-        // Recherche du nœud avec le coût total F le plus bas
+        // Finding the node with the lowest total F cost
         for (TPair<int, FNodeData>& index : OPEN)
         {
             if (index.Value.f_cost < current.Value.f_cost)
@@ -115,7 +115,7 @@ void UPathfindingAction::LeftClick(int Index)
         OPEN.Remove(current.Key);
         CLOSED.Emplace(current.Key, current.Value);
 
-        // Destination atteinte, on sort de la boucle
+        // Destination reached, exit the loop
         if (current.Key == target.Key)
         {
             flag = true;
@@ -124,7 +124,7 @@ void UPathfindingAction::LeftClick(int Index)
 
         NEIGHBOURS = GetAllNeighbours(current.Key, current.Value.g_cost);
 
-        // Analyse des tuiles voisines
+        // Analyzing neighboring tiles
         for (TPair<int, FNodeData> neighbourToCheck : NEIGHBOURS)
         {
             int neighbourKey = neighbourToCheck.Key;
@@ -134,7 +134,7 @@ void UPathfindingAction::LeftClick(int Index)
             bool bIsEngineer = PlayerCharacter->UnitRowName == FName("Engineer");
             bool bIsCurrentTile = neighbourKey == PlayerCharacter->CurrentTileIndex;
 
-            // Filtre des obstacles de la carte selon le profil du personnage
+            // Filtering map obstacles based on the character profile
             if ((TileType == ETileType::Blocked && !bIsCurrentTile) ||
                 (TileType == ETileType::Hole && !bIsEngineer))
             {
@@ -143,7 +143,7 @@ void UPathfindingAction::LeftClick(int Index)
 
             if (CLOSED.Contains(neighbourKey)) continue;
 
-            // Mise à jour ou ajout du nœud dans la liste OPEN
+            // Updating or adding the node to the OPEN list
             if (!OPEN.Contains(neighbourKey) || neighbourData.f_cost < OPEN[neighbourKey].f_cost)
             {
                 neighbourData.parent_index = current.Key;
@@ -157,7 +157,7 @@ void UPathfindingAction::LeftClick(int Index)
     }
 
     // ------------------------------------------------------------------------
-    // Phase 4 : Reconstruction et validation du chemin final
+    // Phase 4: Final path reconstruction and validation
     // ------------------------------------------------------------------------
     FinalPath.Empty();
 
@@ -166,7 +166,7 @@ void UPathfindingAction::LeftClick(int Index)
         int min = 0;
         int max = GridRef->X * GridRef->Y;
 
-        // Remontée des parents pour recréer la chaîne du chemin parcouru
+        // Following parent nodes to rebuild the path chain
         while (target.Key != startIndex.Key && min < max)
         {
             if (!CLOSED.Contains(target.Key) || CLOSED[target.Key].parent_index == -1)
@@ -178,28 +178,28 @@ void UPathfindingAction::LeftClick(int Index)
         }
 
         FinalPath.Add(startIndex.Key);
-        Algo::Reverse(FinalPath); // Remise du chemin dans le bon sens (Départ -> Arrivée)
+        Algo::Reverse(FinalPath); // Reversing the path into the correct order (Start -> Destination)
 
-        // Sécurité : On refuse le mouvement si le chemin réel dépasse la stat du personnage
+        // Safety: Reject movement if the actual path exceeds the character movement stat
         if (FinalPath.Num() - 1 > PlayerCharacter->MoveRange)
         {
             return;
         }
 
-        // Transmission du chemin au personnage et nettoyage du visuel de la grille
+        // Sending the path to the character and clearing the grid visuals
         PlayerCharacter->SetPath(FinalPath);
         ClearReachableTiles();
     }
 }
 
 // ============================================================================
-// Gestion du Clic Droit : Annulation et Reset
+// Right Click Handling: Cancel and Reset
 // ============================================================================
 void UPathfindingAction::RightClick(int Index)
 {
     if (!GridRef) return;
 
-    // Désélectionne visuellement la case ciblée
+    // Visually deselects the targeted tile
     if (GridRef->isIndexValid(Index))
     {
         GridRef->RemoveStateToTile(ETileState::Selected, Index);
@@ -209,11 +209,11 @@ void UPathfindingAction::RightClick(int Index)
 }
 
 // ============================================================================
-// Nettoyage et initialisation des structures de données de calcul
+// Cleaning and initializing calculation data structures
 // ============================================================================
 void UPathfindingAction::InitGrid()
 {
-    // Efface le tracé du chemin précédent sur la grille
+    // Clears the previous path visualization from the grid
     for (auto& neigh : CLOSED)
     {
         GridRef->RemoveStateToTile(ETileState::Way, neigh.Key);
@@ -225,13 +225,13 @@ void UPathfindingAction::InitGrid()
 
     flag = false;
 
-    // Définition du point de départ A* sur la position actuelle du joueur
+    // Setting the A* start point to the player current position
     startIndex.Key = GridRef->GetIndexFromWorldPosition(PlayerCharacter->GetActorLocation());
     startIndex.Value = FNodeData(0, 0, 0, -1);
 }
 
 // ============================================================================
-// Mathématiques A* : Récupération et évaluation des voisins (Grille 2D)
+// A* Mathematics: Retrieving and evaluating neighbors (2D Grid)
 // ============================================================================
 TMap<int, FNodeData> UPathfindingAction::GetAllNeighbours(int NodeToCheck, int parentGCost)
 {
@@ -240,24 +240,24 @@ TMap<int, FNodeData> UPathfindingAction::GetAllNeighbours(int NodeToCheck, int p
     int col = NodeToCheck / GridRef->Y;
     int row = NodeToCheck % GridRef->Y;
 
-    // Analyse de l'entourage direct (3x3 autour du nœud)
+    // Analyzing the immediate surroundings (3x3 around the node)
     for (int i = -1; i <= 1; i++)
     {
         for (int j = -1; j <= 1; j++)
         {
-            if (i == 0 && j == 0) continue; // Ignore le centre
+            if (i == 0 && j == 0) continue; // Ignores the center
 
             int newCol = col + i;
             int newRow = row + j;
 
-            // Restreint la recherche aux limites de la map
+            // Restricts the search to the map boundaries
             if (newCol < 0 || newCol >= GridRef->X) continue;
             if (newRow < 0 || newRow >= GridRef->Y) continue;
 
             int neighbourIndex = newCol * GridRef->Y + newRow;
             bool isDiagonal = (i != 0 && j != 0);
 
-            // Calcul des coûts heuristiques et ajout à la liste locale des voisins
+            // Calculating heuristic costs and adding to the local neighbor list
             NEWNEIGHBOURS.Emplace(
                 neighbourIndex,
                 GetPositionOfTheTile(target.Key, neighbourIndex, parentGCost, isDiagonal)
@@ -270,10 +270,10 @@ TMap<int, FNodeData> UPathfindingAction::GetAllNeighbours(int NodeToCheck, int p
 
 FNodeData UPathfindingAction::GetPositionOfTheTile(int Target, int nodeIndex, int parentGCost, bool isDiagonal)
 {
-    // Coût G : Coût du chemin depuis le point de départ (10 en ligne droite, 14 en diagonale)
+    // G cost: Path cost from the start point (10 straight, 14 diagonal)
     int g = parentGCost + (isDiagonal ? 14 : 10);
 
-    // Coût H : Distance de Manhattan / Heuristique diagonale jusqu'à la cible
+    // H cost: Manhattan distance / diagonal heuristic to the target
     int dx_h = abs((nodeIndex / GridRef->Y) - (Target / GridRef->Y));
     int dy_h = abs((nodeIndex % GridRef->Y) - (Target % GridRef->Y));
     int h = 14 * std::min(dx_h, dy_h) + 10 * abs(dx_h - dy_h);
@@ -282,7 +282,7 @@ FNodeData UPathfindingAction::GetPositionOfTheTile(int Target, int nodeIndex, in
 }
 
 // ============================================================================
-// Gestion Visuelle : Affichage du pattern de portée (Mouvement)
+// Visual Management: Displaying the movement range pattern
 // ============================================================================
 void UPathfindingAction::ShowReachableTiles()
 {
@@ -295,7 +295,7 @@ void UPathfindingAction::ShowReachableTiles()
     int StartCol = StartIndex / GridRef->Y;
     int StartRow = StartIndex % GridRef->Y;
 
-    // Balayage de la zone délimitée par la portée de déplacement maximale
+    // Scanning the area defined by the maximum movement range
     for (int x = -PlayerCharacter->MoveRange; x <= PlayerCharacter->MoveRange; x++)
     {
         for (int y = -PlayerCharacter->MoveRange; y <= PlayerCharacter->MoveRange; y++)
@@ -310,7 +310,7 @@ void UPathfindingAction::ShowReachableTiles()
             int Distance = FMath::Abs(x) + FMath::Abs(y);
             bool bCanMove = false;
 
-            // Application du filtre de schéma selon la classe/type de déplacement du perso
+            // Applying the pattern filter based on the character movement class/type
             switch (PlayerCharacter->MovePattern)
             {
             case EMovePattern::Orthogonal:
@@ -326,7 +326,7 @@ void UPathfindingAction::ShowReachableTiles()
                 break;
             }
 
-            // Validation finale des propriétés de la case avant affichage
+            // Final validation of tile properties before display
             if (bCanMove)
             {
                 ETileType TileType = GridRef->FindTileType(Index);
@@ -339,7 +339,7 @@ void UPathfindingAction::ShowReachableTiles()
                     continue;
                 }
 
-                // Allumage visuel de la case valide détectée
+                // Visually highlighting the detected valid tile
                 GridRef->AddStateToTile(ETileState::Reachable, Index);
                 ReachableTiles.AddUnique(Index);
             }

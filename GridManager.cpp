@@ -13,7 +13,7 @@
 #define ECC_Player ECC_GameTraceChannel2
 
 // ============================================================================
-// Constructeur : Initialisation des composants et de la physique
+// Constructor: Component and physics initialization
 // ============================================================================
 AGridManager::AGridManager()
 {
@@ -22,7 +22,7 @@ AGridManager::AGridManager()
 	ISM = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("ISM"));
 	ISM->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
-	// Configuration des collisions pour la grille et le joueur
+	// Collision setup for the grid and player
 	ISM->SetCollisionResponseToChannel(
 		ECollisionChannel::ECC_Grid,
 		ECollisionResponse::ECR_Block
@@ -38,12 +38,12 @@ AGridManager::AGridManager()
 		ECR_Ignore
 	);
 
-	// Nombre de floats requis pour les données personnalisées du shader (Couleurs)
+	// Number of floats required for shader custom data (colors)
 	ISM->NumCustomDataFloats = 4;
 }
 
 // ============================================================================
-// Gestion des états des cases (Reachable, Hovered, etc.)
+// Tile state management (Reachable, Hovered, etc.)
 // ============================================================================
 void AGridManager::AddStateToTile(ETileState stateToAdd, int InstanceIndex)
 {
@@ -63,7 +63,7 @@ void AGridManager::RemoveStateToTile(ETileState stateToRemove, int InstanceIndex
 }
 
 // ============================================================================
-// Gestion des types de cases (Normal, Blocked, Fire, etc.)
+// Tile type management (Normal, Blocked, Fire, etc.)
 // ============================================================================
 void AGridManager::AddTypeToTile(ETileType typeToAdd, int InstanceIndex)
 {
@@ -80,13 +80,13 @@ ETileType AGridManager::FindTileType(int index)
 }
 
 // ============================================================================
-// Calcul visuel et mise à jour des couleurs
+// Visual calculation and color updates
 // ============================================================================
 FLinearColor AGridManager::GetColorFromStates(TArray<ETileState> ArrayToCheck)
 {
 	ETileState lastState = ETileState::None;
 
-	// Détermination de l'état prioritaire
+	// Determining the highest-priority state
 	for (ETileState State : ArrayToCheck)
 	{
 		if (State < lastState)
@@ -113,7 +113,7 @@ void AGridManager::UpdateTileVisuals(int InstanceIndex)
 
 void AGridManager::ChangeColor(int InstanceIndex, FLinearColor color)
 {
-	// Envoi des données RGBA au Custom Data du Shader
+	// Sending RGBA values to the shader Custom Data
 	ISM->SetCustomDataValue(InstanceIndex, 0, color.R);
 	ISM->SetCustomDataValue(InstanceIndex, 1, color.G);
 	ISM->SetCustomDataValue(InstanceIndex, 2, color.B);
@@ -122,13 +122,13 @@ void AGridManager::ChangeColor(int InstanceIndex, FLinearColor color)
 }
 
 // ============================================================================
-// Génération procédurale de la grille (Éditeur / Construction)
+// Procedural grid generation (Editor / Construction)
 // ============================================================================
 void AGridManager::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	// Réinitialisation de l'Instanced Static Mesh
+	// Resetting the Instanced Static Mesh
 	ISM->ClearInstances();
 	ISM->RegisterComponent();
 	ISM->SetStaticMesh(Mesh);
@@ -136,7 +136,7 @@ void AGridManager::OnConstruction(const FTransform& Transform)
 
 	int index = 0;
 
-	// Création du maillage de la grille en X et Y
+	// Creating the grid mesh along X and Y
 	for (int i = 0; i < X; i++)
 	{
 		for (int j = 0; j < Y; j++)
@@ -145,7 +145,7 @@ void AGridManager::OnConstruction(const FTransform& Transform)
 			FTransform Trans = FTransform(FRotator(0, 0, 0), Pos, FVector(TileSize / 100, TileSize / 100, TileSize / 100));
 			ISM->AddInstance(Trans);
 
-			// Initialisation des données de structure pour chaque case
+			// Initializing structure data for each tile
 			TileMap.Emplace(index, FTileData(TArray<ETileState> {ETileState::None}, ETileType::Normal));
 			index++;
 		}
@@ -158,7 +158,7 @@ bool AGridManager::isIndexValid(int index)
 }
 
 // ============================================================================
-// Initialisation du jeu, des contrôles et des références
+// Game, input, and reference initialization
 // ============================================================================
 void AGridManager::BeginPlay()
 {
@@ -166,10 +166,10 @@ void AGridManager::BeginPlay()
 
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
-	// Récupération du Turn Manager
+	// Retrieving the Turn Manager
 	TurnManagerRef = Cast<ATurnManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ATurnManager::StaticClass()));
 
-	// Activation de la souris et des événements de survol
+	// Enabling mouse cursor and hover events
 	if (PlayerController)
 	{
 		PlayerController->bShowMouseCursor = true;
@@ -179,7 +179,7 @@ void AGridManager::BeginPlay()
 
 	EnableInput(PlayerController);
 
-	// Configuration d'Enhanced Input (Mapping Context)
+	// Enhanced Input setup (Mapping Context)
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 	{
 		if (DefaultMappingContext)
@@ -192,7 +192,7 @@ void AGridManager::BeginPlay()
 		}
 	}
 
-	// Liaison des actions de clic (Sélection / Désélection)
+	// Binding click actions (Select / Deselect)
 	if (UEnhancedInputComponent* EIC = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
 		EIC->BindAction(SelectAction, ETriggerEvent::Started, this, &AGridManager::OnSelect);
@@ -201,7 +201,7 @@ void AGridManager::BeginPlay()
 }
 
 // ============================================================================
-// Traitement des inputs (Clic gauche / Clic droit)
+// Input handling (Left click / Right click)
 // ============================================================================
 void AGridManager::OnSelect(const FInputActionValue& Value)
 {
@@ -221,7 +221,7 @@ void AGridManager::OnUnSelect(const FInputActionValue& Value)
 }
 
 // ============================================================================
-// Mise à jour logique et détection du survol de la souris
+// Logic update and mouse hover detection
 // ============================================================================
 void AGridManager::Tick(float DeltaTime)
 {
@@ -229,7 +229,7 @@ void AGridManager::Tick(float DeltaTime)
 
 	if (!PlayerController) return;
 
-	// Raycast sous la souris pour trouver la case survolée
+	// Raycast under the mouse to find the hovered tile
 	bool bHit = PlayerController->GetHitResultUnderCursor(ECC_Grid, false, Hit);
 
 	if (bHit && Hit.Item != CurrentIndex)
@@ -240,12 +240,12 @@ void AGridManager::Tick(float DeltaTime)
 
 	if (!IsValid(CurrentAction)) return;
 
-	// Exécution continue de l'action sur la case actuelle (ex: prévisualisation)
+	// Continuously executing the action on the current tile (e.g. preview)
 	CurrentAction->ExecuteAction(CurrentIndex);
 }
 
 // ============================================================================
-// Outils de conversion (Index <--> Coordonnées Monde)
+// Conversion utilities (Index <--> World Coordinates)
 // ============================================================================
 FVector AGridManager::GetWorldPositionFromIndex(int Index)
 {
@@ -280,17 +280,17 @@ void AGridManager::ClearCurrentSelection()
 }
 
 // ============================================================================
-// Mécaniques de jeu spécifiques (Effets de statut sur les tuiles)
+// Specific gameplay mechanics (Tile status effects)
 // ============================================================================
 void AGridManager::AddFireTile(int TileIndex)
 {
-	// Sécurité : On ne met pas le feu à un obstacle bloquant
+	// Safety: Do not set a blocking obstacle on fire
 	if (FindTileType(TileIndex) == ETileType::Blocked)
 	{
 		return;
 	}
 
-	// Application du type Feu et spawn des particules Niagara
+	// Applying the Fire type and spawning Niagara particles
 	AddTypeToTile(ETileType::Fire, TileIndex);
 
 	UNiagaraComponent* FX = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
@@ -299,7 +299,7 @@ void AGridManager::AddFireTile(int TileIndex)
 		GetWorldPositionFromIndex(TileIndex)
 	);
 
-	// Enregistrement des données de la case en feu (durée de vie)
+	// Storing fire tile data (lifetime)
 	FFireTile NewFire;
 	NewFire.FireComponent = FX;
 	NewFire.TileIndex = TileIndex;

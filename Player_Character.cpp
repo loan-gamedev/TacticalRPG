@@ -11,7 +11,7 @@
 #define ECC_Player ECC_GameTraceChannel2
 
 // =========================
-// Constructeur
+// Constructor
 // =========================
 
 APlayer_Character::APlayer_Character()
@@ -32,7 +32,7 @@ APlayer_Character::APlayer_Character()
 }
 
 // =========================
-// Initialisation
+// Initialization
 // =========================
 
 void APlayer_Character::BeginPlay()
@@ -71,8 +71,8 @@ void APlayer_Character::Tick(float DeltaTime)
 }
 
 // =========================
-// Helper générique : appelle une fonction Blueprint du widget
-// via reflection, en évitant la répétition de FindFunction/ProcessEvent
+// Generic helper: calls a Blueprint function on the widget
+// via reflection, avoiding repeated FindFunction/ProcessEvent calls
 // =========================
 
 template<typename ParamType, typename SetterFunc>
@@ -89,7 +89,7 @@ static void CallWidgetFunction(UUserWidget* Widget, FName FunctionName, SetterFu
 }
 
 // =========================
-// Sélection du joueur
+// Player selection
 // =========================
 
 void APlayer_Character::SelectPlayer()
@@ -109,7 +109,7 @@ void APlayer_Character::SelectPlayer()
 
     if (!UnitWidget) return;
 
-    // Struct params génériques réutilisés pour tous les champs texte
+    // Generic parameter struct reused for all text fields
     struct FTextParams { FText InText; };
 
     CallWidgetFunction<FTextParams>(UnitWidget, FName("SetName"), [this](FTextParams& P) {
@@ -140,7 +140,7 @@ void APlayer_Character::SelectPlayer()
 }
 
 // =========================
-// Désélection du joueur
+// Player deselection
 // =========================
 
 void APlayer_Character::UnselectPlayer()
@@ -149,7 +149,7 @@ void APlayer_Character::UnselectPlayer()
 }
 
 // =========================
-// Déplacement sur le chemin
+// Movement along the path
 // =========================
 
 void APlayer_Character::MoveAlongPath(float DeltaTime)
@@ -270,7 +270,7 @@ void APlayer_Character::MoveAlongPath(float DeltaTime)
 			);
 
 		// =========================
-		// Restauration de l'ancienne case
+		// Restoring the previous tile
 		// =========================
 
 		if (
@@ -293,7 +293,7 @@ void APlayer_Character::MoveAlongPath(float DeltaTime)
 		}
 
 		// =========================
-		// Sauvegarde du type réel
+		// Saving the actual tile type
 		// =========================
 
 		PreviousTileType =
@@ -302,7 +302,7 @@ void APlayer_Character::MoveAlongPath(float DeltaTime)
 			);
 
 		// =========================
-		// Vérification du feu
+		// Fire check
 		// =========================
 
 		bool bWasFire =
@@ -313,7 +313,7 @@ void APlayer_Character::MoveAlongPath(float DeltaTime)
 				);
 
 		// =========================
-		// Blocage de la nouvelle case
+		// Blocking the new tile
 		// =========================
 
 		GridManagerRef->AddTypeToTile(
@@ -322,7 +322,7 @@ void APlayer_Character::MoveAlongPath(float DeltaTime)
 		);
 
 		// =========================
-		// Création du feu sur l'ancienne case
+		// Creating fire on the previous tile
 		// =========================
 
 		GridManagerRef->AddFireTile(
@@ -333,7 +333,7 @@ void APlayer_Character::MoveAlongPath(float DeltaTime)
 			NewTile;
 
 		// =========================
-		// Application des dégâts
+		// Applying damage
 		// =========================
 
 		if (bWasFire)
@@ -346,7 +346,7 @@ void APlayer_Character::MoveAlongPath(float DeltaTime)
 }
 
 // =========================
-// Clic sur le joueur
+// Player click
 // =========================
 
 void APlayer_Character::OnPlayerClicked(
@@ -360,7 +360,7 @@ void APlayer_Character::OnPlayerClicked(
 }
 
 // =========================
-// Retour à l'état idle
+// Return to idle state
 // =========================
 
 void APlayer_Character::ResetToIdle()
