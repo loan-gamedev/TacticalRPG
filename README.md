@@ -1,4 +1,4 @@
-# Tactical RPG — Unreal Engine 5 Prototype
+# Tactical RPG - Unreal Engine 5 Prototype
 
 Grid-based tactical RPG prototype in C++/UE5. Academic project at HEAJ (Belgium).
 
